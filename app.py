@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from openai import OpenAI
+from anthropic import Anthropic
 import os
 import json
 from dotenv import load_dotenv
@@ -9,8 +9,20 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Initialize OpenAI client
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+# Initialize Anthropic client (Claude API) with API key from .env
+client = None
+api_key = os.getenv('ANTHROPIC_API_KEY')
+
+if api_key:
+    try:
+        print(f"✅ Initializing Anthropic client with API key...")
+        client = Anthropic(api_key=api_key)
+        print("✅ Anthropic client created successfully")
+    except Exception as e:
+        print(f"❌ Error creating Anthropic client: {e}")
+        client = None
+else:
+    print("❌ No ANTHROPIC_API_KEY found in .env file")
 
 # Available intents for a medical clinic
 CLINIC_INTENTS = [
@@ -126,10 +138,10 @@ def parse_transcript():
             "error": "Transcript cannot be empty"
         }), 400
 
-    if not os.getenv('OPENAI_API_KEY'):
+    if not client:
         return jsonify({
             "success": False,
-            "error": "OpenAI API key not configured. Please set OPENAI_API_KEY in .env file"
+            "error": "API not configured. Please: 1) Run 'pip install -r requirements.txt', 2) Add your API key to .env file"
         }), 500
 
     # Use AI to detect intent and extract data
@@ -148,5 +160,5 @@ def parse_transcript():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, host='localhost', port=5001)
+    app.run(debug=True, host='localhost', port=5002)
 
