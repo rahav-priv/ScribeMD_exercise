@@ -54,7 +54,7 @@ scribemd/
    ```
 
 5. **Open in browser**
-   - Navigate to `http://localhost:5000`
+   - Navigate to `http://localhost:5001`
 
 ## Usage
 
@@ -92,7 +92,7 @@ Currently, the server returns the raw transcript as-is. To add parsing logic:
 
 ## Development
 
-The app runs with Flask's debug mode enabled, so changes to Python files will automatically reload the server. Static files (CSS, JS) are served from the `static/` directory.
+The app runs with Flask's debug mode enabled on **http://localhost:5001**, so changes to Python files will automatically reload the server. Static files (CSS, JS) are served from the `static/` directory.
 
 ## Future Enhancements
 
