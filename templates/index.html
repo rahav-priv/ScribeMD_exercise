@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScribeMD - Transcript Parser</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ScribeMD</h1>
+            <p class="subtitle">Transcript Parser</p>
+        </header>
+
+        <div class="content">
+            <div class="section">
+                <label for="raw-transcript" class="section-title">Raw Transcript</label>
+                <textarea id="raw-transcript" placeholder="Paste your raw transcript here..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button id="submit-btn" class="btn btn-submit">Submit</button>
+                <button id="clear-btn" class="btn btn-clear">Clear</button>
+            </div>
+
+            <div class="section">
+                <label for="parsed-data" class="section-title">Parsed Data</label>
+                <textarea id="parsed-data" readonly placeholder="Parsed data will appear here..."></textarea>
+            </div>
+        </div>
+
+        <div id="status-message" class="status-message hidden"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
