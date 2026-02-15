@@ -26,16 +26,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({ transcript: transcript })
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                throw new Error(`Server error: ${response.status}`);
+                throw new Error(result.error || `Server error: ${response.status}`);
             }
 
-            const parsedData = await response.json();
-            parsedDataOutput.value = JSON.stringify(parsedData, null, 2);
-            showStatus('Transcript parsed successfully!', 'success');
+            if (result.success && result.data) {
+                // Display the parsed data with proper formatting
+                parsedDataOutput.value = JSON.stringify(result.data, null, 2);
+                showStatus('Transcript analyzed successfully!', 'success');
+            } else {
+                throw new Error(result.error || 'Unknown error parsing transcript');
+            }
         } catch (error) {
             console.error('Error:', error);
-            showStatus('Error processing transcript: ' + error.message, 'error');
+            showStatus('Error: ' + error.message, 'error');
             parsedDataOutput.value = '';
         } finally {
             submitBtn.disabled = false;

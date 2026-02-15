@@ -1,14 +1,36 @@
 # ScribeMD - Transcript Parser
 
-A simple web application for parsing and processing transcripts. Built with Flask and vanilla JavaScript.
+An AI-powered web application for analyzing medical clinic phone call transcripts. Uses advanced language models to automatically detect caller intent, extract structured information, and flag urgency levels.
 
 ## Features
 
-- **Raw Transcript Input**: Paste your raw transcript text into the left panel
-- **Parsed Data Output**: View the parsed JSON data in the right panel
-- **Submit Button**: Send transcript to server for processing
+- **AI-Powered Intent Detection**: Automatically identifies the reason for the call (appointment booking, prescription refill, urgent issue, etc.)
+- **Structured Data Extraction**: Extracts caller information including name, date of birth, phone number
+- **Urgency Flagging**: Automatically flags urgent medical issues
+- **Confidence Scoring**: Provides confidence level for each analysis
+- **Raw Transcript Input**: Paste phone call transcripts into the left panel
+- **Parsed Data Output**: View the analyzed JSON data in the right panel with all extracted information
+- **Submit Button**: Send transcript to server for AI analysis
 - **Clear Button**: Reset both text fields
-- **Real-time Feedback**: Status messages for user actions
+
+## Supported Intents
+
+The system can detect these common medical clinic call types:
+- appointment_booking
+- appointment_cancellation
+- appointment_reschedule
+- prescription_refill
+- lab_results
+- billing_question
+- insurance_question
+- medication_side_effects
+- **urgent_medical_issue** (flags high urgency)
+- general_inquiry
+- referral_request
+- follow_up_call
+- test_scheduling
+- record_request
+- other
 
 ## Project Structure
 
@@ -28,6 +50,7 @@ scribemd/
 ### Prerequisites
 - Python 3.8+
 - pip (Python package manager)
+- OpenAI API key (Claude 3.5 Sonnet or GPT-4 recommended)
 
 ### Steps
 
@@ -48,37 +71,100 @@ scribemd/
    pip install -r requirements.txt
    ```
 
-4. **Run the application**
+4. **Configure API Key**
+   - Open `.env` file and add your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
+   - Get your API key from: https://platform.openai.com/api-keys
+
+5. **Run the application**
    ```bash
    python app.py
    ```
 
-5. **Open in browser**
+6. **Open in browser**
    - Navigate to `http://localhost:5001`
 
 ## Usage
 
-1. Enter or paste your transcript in the "Raw Transcript" field
+1. Enter or paste a medical clinic phone call transcript in the "Raw Transcript" field
 2. Click the "Submit" button
-3. The server will process it and display the parsed JSON in the "Parsed Data" field
+3. The AI will analyze the transcript and display:
+   - Detected intent (what the caller wants)
+   - Extracted name, date of birth, phone number
+   - Summary of the call reason
+   - Urgency level (low, medium, high, critical)
+   - Confidence score
+   - Additional details (symptoms, medications, appointment dates, etc.)
 4. Use the "Clear" button to reset both fields
+
+### Example Input:
+```
+Hi, this is Sarah Cohen, born 03/12/1988. I need to book an appointment because 
+I've had chest pain for two days. Please call me back at 310-555-2211.
+```
+
+### Example Output:
+```json
+{
+  "intent": "urgent_medical_issue",
+  "name": "Sarah Cohen",
+  "dob": "1988-03-12",
+  "phone": "310-555-2211",
+  "summary": "Chest pain for two days - requires urgent appointment",
+  "urgency": "high",
+  "confidence": 0.95,
+  "extracted_details": {
+    "symptoms": ["chest pain"],
+    "medications_mentioned": [],
+    "appointment_dates": [],
+    "other_info": ["Duration: 2 days"]
+  },
+  "raw_transcript": "Hi, this is Sarah Cohen..."
+}
+```
 
 ## API Endpoints
 
 ### POST `/api/parse`
-Sends raw transcript to the server for parsing.
+Sends a phone call transcript to the server for AI analysis.
 
 **Request:**
 ```json
 {
-  "transcript": "Your raw transcript text here..."
+  "transcript": "Hi, this is John Smith. I need to refill my prescription..."
 }
 ```
 
 **Response:**
 ```json
 {
-  "raw_transcript": "Your raw transcript text here..."
+  "success": true,
+  "data": {
+    "intent": "prescription_refill",
+    "name": "John Smith",
+    "dob": "1975-05-15",
+    "phone": "555-0123",
+    "summary": "Caller requesting prescription refill",
+    "urgency": "low",
+    "confidence": 0.92,
+    "extracted_details": {
+      "symptoms": [],
+      "medications_mentioned": [],
+      "appointment_dates": [],
+      "other_info": []
+    },
+    "raw_transcript": "Hi, this is John Smith..."
+  }
+}
+```
+
+**Error Response:**
+```json
+{
+  "success": false,
+  "error": "Description of what went wrong"
 }
 ```
 
@@ -94,13 +180,32 @@ Currently, the server returns the raw transcript as-is. To add parsing logic:
 
 The app runs with Flask's debug mode enabled on **http://localhost:5001**, so changes to Python files will automatically reload the server. Static files (CSS, JS) are served from the `static/` directory.
 
+### Adding Custom Intents
+
+To add new intents, edit the `CLINIC_INTENTS` list in `app.py`:
+
+```python
+CLINIC_INTENTS = [
+    "appointment_booking",
+    "your_new_intent_here",  # Add your custom intent
+    # ... rest of intents
+]
+```
+
+The AI will automatically learn to detect the new intent based on the name and context.
+
 ## Future Enhancements
 
-- [ ] Advanced parsing rules
-- [ ] Multiple input formats (audio, video, etc.)
-- [ ] Export functionality (PDF, DOCX)
-- [ ] User authentication
-- [ ] Cloud storage integration
+- [ ] Multi-language support
+- [ ] Custom intent configuration per clinic
+- [ ] Audio transcript integration (speech-to-text)
+- [ ] Call recording analysis
+- [ ] Historical data analytics
+- [ ] Integration with clinic management systems
+- [ ] Real-time call monitoring
+- [ ] Batch processing for multiple transcripts
+- [ ] Export to CSV/PDF reports
+- [ ] User authentication and multi-tenant support
 
 ## License
 
