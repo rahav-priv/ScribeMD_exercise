@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from anthropic import Anthropic
+from openai import OpenAI
 import os
 import json
 from dotenv import load_dotenv
@@ -9,20 +9,20 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Initialize Anthropic client (Claude API) with API key from .env
+# Initialize OpenAI client with API key from .env
 client = None
-api_key = os.getenv('ANTHROPIC_API_KEY')
+api_key = os.getenv('OPENAI_API_KEY')
 
 if api_key:
     try:
-        print(f"✅ Initializing Anthropic client with API key...")
-        client = Anthropic(api_key=api_key)
-        print("✅ Anthropic client created successfully")
+        print(f"✅ Initializing OpenAI client with API key...")
+        client = OpenAI(api_key=api_key)
+        print("✅ OpenAI client created successfully")
     except Exception as e:
-        print(f"❌ Error creating Anthropic client: {e}")
+        print(f"❌ Error creating OpenAI client: {e}")
         client = None
 else:
-    print("❌ No ANTHROPIC_API_KEY found in .env file")
+    print("❌ No OPENAI_API_KEY found in .env file")
 
 # Available intents for a medical clinic
 CLINIC_INTENTS = [
@@ -78,11 +78,14 @@ Return ONLY valid JSON (no markdown, no extra text) with this exact structure:
     }}
 }}"""
 
-        message = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+        message = client.chat.completions.create(
+            model="gpt-3.5-turbo",
             max_tokens=1024,
-            system=system_prompt,
             messages=[
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
                 {
                     "role": "user",
                     "content": f"Analyze this clinic phone transcript:\n\n{transcript}"
@@ -91,7 +94,7 @@ Return ONLY valid JSON (no markdown, no extra text) with this exact structure:
         )
 
         # Parse the response
-        response_text = message.content[0].text.strip()
+        response_text = message.choices[0].message.content.strip()
 
         # Remove markdown code blocks if present
         if response_text.startswith("```"):
