@@ -45,82 +45,293 @@ CLINIC_INTENTS = [
 
 URGENCY_LEVELS = ["low", "medium", "high", "critical"]
 
+# Define intent-specific schemas
+INTENT_SCHEMAS = {
+    "appointment_booking": {
+        "desired_appointment_date": {
+            "type": ["string", "null"],
+            "description": "Desired appointment date in YYYY-MM-DD format"
+        },
+        "appointment_type": {
+            "type": ["string", "null"],
+            "description": "Type of appointment (e.g., checkup, consultation, follow-up)"
+        }
+    },
+    "appointment_cancellation": {
+        "original_appointment_date": {
+            "type": ["string", "null"],
+            "description": "Original appointment date in YYYY-MM-DD format"
+        },
+        "cancellation_reason": {
+            "type": ["string", "null"],
+            "description": "Reason for cancellation"
+        }
+    },
+    "appointment_reschedule": {
+        "original_appointment_date": {
+            "type": ["string", "null"],
+            "description": "Original appointment date in YYYY-MM-DD format"
+        },
+        "desired_new_time": {
+            "type": ["string", "null"],
+            "description": "Desired new appointment date/time in YYYY-MM-DD format"
+        }
+    },
+    "prescription_refill": {
+        "medication_name": {
+            "type": ["string", "null"],
+            "description": "Name of medication to refill"
+        },
+        "refill_count": {
+            "type": ["string", "null"],
+            "description": "Number of refills needed"
+        }
+    },
+    "lab_results": {
+        "test_type": {
+            "type": ["string", "null"],
+            "description": "Type of test/lab result being inquired about"
+        }
+    },
+    "billing_question": {
+        "invoice_number": {
+            "type": ["string", "null"],
+            "description": "Invoice or billing reference number if mentioned"
+        },
+        "question_type": {
+            "type": ["string", "null"],
+            "description": "Type of billing question (payment plan, charges, insurance, etc.)"
+        }
+    },
+    "insurance_question": {
+        "insurance_provider": {
+            "type": ["string", "null"],
+            "description": "Insurance company name if mentioned"
+        },
+        "question_type": {
+            "type": ["string", "null"],
+            "description": "Type of insurance question (coverage, deductible, provider network, etc.)"
+        }
+    },
+    "medication_side_effects": {
+        "medication_name": {
+            "type": ["string", "null"],
+            "description": "Name of medication causing side effects"
+        },
+        "side_effects": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of side effects reported"
+        }
+    },
+    "urgent_medical_issue": {
+        "symptoms": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "List of symptoms or medical issues"
+        },
+        "duration": {
+            "type": ["string", "null"],
+            "description": "How long the issue has been occurring"
+        }
+    },
+    "referral_request": {
+        "specialist_type": {
+            "type": ["string", "null"],
+            "description": "Type of specialist needed (e.g., cardiologist, dermatologist)"
+        }
+    },
+    "test_scheduling": {
+        "test_type": {
+            "type": ["string", "null"],
+            "description": "Type of test to schedule (blood work, imaging, etc.)"
+        },
+        "preferred_date": {
+            "type": ["string", "null"],
+            "description": "Preferred test date in YYYY-MM-DD format"
+        }
+    }
+}
+
+def build_schema_for_intent(intent):
+    """
+    Build a dynamic schema based on the detected intent.
+    Includes common fields plus intent-specific fields.
+    """
+    # Common fields for all intents
+    properties = {
+        "intent": {
+            "type": "string",
+            "enum": CLINIC_INTENTS,
+            "description": "The caller's intent from the call"
+        },
+        "name": {
+            "type": ["string", "null"],
+            "description": "Caller's full name"
+        },
+        "dob": {
+            "type": ["string", "null"],
+            "description": "Date of birth in YYYY-MM-DD format"
+        },
+        "phone": {
+            "type": ["string", "null"],
+            "description": "Caller's callback phone number"
+        },
+        "summary": {
+            "type": "string",
+            "description": "Brief one-sentence summary of the call reason"
+        },
+        "urgency": {
+            "type": "string",
+            "enum": URGENCY_LEVELS,
+            "description": "Urgency level of the call"
+        },
+        "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence score (0-1)"
+        }
+    }
+
+    # Add intent-specific fields if they exist
+    if intent in INTENT_SCHEMAS:
+        properties.update(INTENT_SCHEMAS[intent])
+
+    # Build required fields list
+    required_fields = ["intent", "name", "dob", "phone", "summary", "urgency", "confidence"]
+    if intent in INTENT_SCHEMAS:
+        required_fields.extend(INTENT_SCHEMAS[intent].keys())
+
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": required_fields,
+        "additionalProperties": False
+    }
+
+def get_intent_instructions(intent):
+    """
+    Provide intent-specific extraction instructions
+    """
+    instructions = {
+        "appointment_booking": "- Extract desired_appointment_date: when they want to schedule\n- Extract appointment_type: what kind of appointment",
+        "appointment_cancellation": "- Extract original_appointment_date: when their appointment was scheduled\n- Extract cancellation_reason: why they're canceling",
+        "appointment_reschedule": "- Extract original_appointment_date: their current appointment date\n- Extract desired_new_time: the new date/time they want",
+        "prescription_refill": "- Extract medication_name: what medication they need\n- Extract refill_count: how many refills they need",
+        "lab_results": "- Extract test_type: what test results they're asking about",
+        "billing_question": "- Extract invoice_number: any billing/invoice reference number\n- Extract question_type: what they want to know (charges, payment plan, insurance, etc.)",
+        "insurance_question": "- Extract insurance_provider: their insurance company name\n- Extract question_type: what they want to know (coverage, deductible, network, etc.)",
+        "medication_side_effects": "- Extract medication_name: what medication is causing issues\n- Extract side_effects: list of side effects they're experiencing",
+        "urgent_medical_issue": "- Extract symptoms: list of symptoms or medical issues\n- Extract duration: how long they've had these symptoms",
+        "referral_request": "- Extract specialist_type: what type of specialist they need",
+        "test_scheduling": "- Extract test_type: what test they want to schedule\n- Extract preferred_date: when they'd like to schedule it",
+    }
+    return instructions.get(intent, "")
+
 def detect_intent_and_extract_data(transcript):
     """
-    Uses OpenAI API to detect intent and extract structured information from transcript.
-    Returns parsed JSON with intent, extracted data, and urgency flag.
+    Two-step process:
+    1. First, detect the intent
+    2. Then, build dynamic schema based on intent
+    3. Finally, extract data with intent-specific fields
     """
     try:
-        system_prompt = f"""You are an AI assistant for a medical clinic phone call analysis system.
-        
-Your task is to analyze phone transcripts and:
-1. Detect the caller's intent
-2. Extract structured information
-3. Flag urgency level
+        # Step 1: Detect intent first with minimal schema
+        intent_detection_schema = {
+            "type": "object",
+            "properties": {
+                "intent": {
+                    "type": "string",
+                    "enum": CLINIC_INTENTS
+                }
+            },
+            "required": ["intent"],
+            "additionalProperties": False
+        }
 
-Available intents: {', '.join(CLINIC_INTENTS)}
-Urgency levels: {', '.join(URGENCY_LEVELS)}
-
-Return ONLY valid JSON (no markdown, no extra text) with this exact structure:
-{{
-    "intent": "one of the intents",
-    "name": "caller's full name or null",
-    "dob": "date of birth in YYYY-MM-DD format or null",
-    "phone": "callback phone number or null",
-    "summary": "brief summary of reason for call",
-    "urgency": "urgency level",
-    "confidence": 0.0-1.0,
-    "extracted_details": {{
-        "symptoms": [],
-        "medications_mentioned": [],
-        "appointment_dates": [],
-        "other_info": []
-    }}
-}}"""
-
-        message = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            max_tokens=1024,
+        intent_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            temperature=0.2,
             messages=[
                 {
                     "role": "system",
-                    "content": system_prompt
+                    "content": "Detect the caller's intent from this medical clinic phone transcript. Return only JSON with intent field."
                 },
                 {
                     "role": "user",
-                    "content": f"Analyze this clinic phone transcript:\n\n{transcript}"
+                    "content": transcript
                 }
-            ]
+            ],
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "intent_detection",
+                    "schema": intent_detection_schema,
+                    "strict": True
+                }
+            }
         )
 
-        # Parse the response
-        response_text = message.choices[0].message.content.strip()
+        intent_data = json.loads(intent_response.choices[0].message.content)
+        detected_intent = intent_data["intent"]
 
-        # Remove markdown code blocks if present
-        if response_text.startswith("```"):
-            response_text = response_text.split("```")[1]
-            if response_text.startswith("json"):
-                response_text = response_text[4:]
-        response_text = response_text.strip()
+        # Step 2: Build dynamic schema based on detected intent
+        dynamic_schema = build_schema_for_intent(detected_intent)
 
-        parsed_data = json.loads(response_text)
+        # Step 3: Extract all data with intent-specific fields
+        full_response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            temperature=0.2,
+            messages=[
+                {
+                    "role": "system",
+                    "content": f"""You are a medical clinic phone assistant. Extract structured data from call transcripts.
+
+Intent detected: {detected_intent}
+
+Common field instructions:
+- Extract name: the caller's full name. If not mentioned, use null
+- Extract dob: date of birth in YYYY-MM-DD format (e.g., 1988-03-12). If not mentioned, use null
+- Extract phone: the caller's callback phone number. If not mentioned, use null
+- Extract summary: brief one-sentence summary of why they're calling
+- Extract urgency: assess urgency level (low, medium, high, critical)
+- Extract confidence: your confidence score (0.0-1.0) on accuracy of extraction
+
+Intent-specific instructions:
+{get_intent_instructions(detected_intent)}
+
+Return ONLY the JSON data matching the schema."""
+                },
+                {
+                    "role": "user",
+                    "content": transcript
+                }
+            ],
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "clinic_call_analysis",
+                    "schema": dynamic_schema,
+                    "strict": True
+                }
+            }
+        )
+
+        parsed_data = json.loads(full_response.choices[0].message.content)
 
         return {
             "success": True,
             "data": parsed_data
         }
 
-    except json.JSONDecodeError as e:
-        return {
-            "success": False,
-            "error": f"Failed to parse AI response: {str(e)}",
-            "raw_response": response_text if 'response_text' in locals() else None
-        }
     except Exception as e:
         return {
             "success": False,
             "error": f"API Error: {str(e)}"
         }
+
+
 
 @app.route('/')
 def index():

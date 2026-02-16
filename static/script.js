@@ -10,12 +10,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const transcript = rawTranscriptInput.value.trim();
 
         if (!transcript) {
-            showStatus('Please enter some text', 'error');
+            displayError('❌ ERROR: Please enter some text');
             return;
         }
 
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing...';
+        parsedDataOutput.value = '⏳ Processing...';
 
         try {
             const response = await fetch('/api/parse', {
@@ -35,14 +36,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (result.success && result.data) {
                 // Display the parsed data with proper formatting
                 parsedDataOutput.value = JSON.stringify(result.data, null, 2);
-                showStatus('Transcript analyzed successfully!', 'success');
+                showStatus('✅ Transcript analyzed successfully!', 'success');
             } else {
                 throw new Error(result.error || 'Unknown error parsing transcript');
             }
         } catch (error) {
             console.error('Error:', error);
-            showStatus('Error: ' + error.message, 'error');
-            parsedDataOutput.value = '';
+            displayError(`❌ ERROR: ${error.message}`);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Submit';
@@ -54,10 +54,15 @@ document.addEventListener('DOMContentLoaded', function() {
         rawTranscriptInput.value = '';
         parsedDataOutput.value = '';
         rawTranscriptInput.focus();
-        showStatus('Cleared!', 'success');
+        showStatus('🗑️ Cleared!', 'success');
     });
 
-    // Utility function to show status messages
+    // Display error in the textarea (not popup)
+    function displayError(errorMessage) {
+        parsedDataOutput.value = errorMessage;
+    }
+
+    // Utility function to show temporary status messages
     function showStatus(message, type) {
         statusMessage.textContent = message;
         statusMessage.className = `status-message ${type} show`;
