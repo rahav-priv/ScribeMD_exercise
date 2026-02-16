@@ -193,13 +193,14 @@ The AI will automatically learn to detect the new intent based on the name and c
 
 ## Future Enhancements
 
+- [ ] Integration with CRM
 - [ ] Interactive: fix intent correction, setting appointments, etc.
 - [ ] Custom intent configuration per clinic
 - [ ] Call recording analysis
 - [ ] Historical data analytics
 - [ ] Integration with clinic management systems
 - [ ] Real-time call monitoring
-- [ ] Batch processing for multiple transcripts
+- [ ] Parallelism: Batch processing for multiple transcripts
 - [ ] Export to CSV/PDF reports integration with database storage
 - [ ] User authentication and Saas support
 - [ ] Multi-language support
