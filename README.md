@@ -176,9 +176,6 @@ Currently, the server returns the raw transcript as-is. To add parsing logic:
 2. Add your parsing rules and create new fields in the `parsed_data` dictionary
 3. The changes will be reflected automatically (Flask debug mode enabled)
 
-## Development
-
-The app runs with Flask's debug mode enabled on **http://localhost:5001**, so changes to Python files will automatically reload the server. Static files (CSS, JS) are served from the `static/` directory.
 
 ### Adding Custom Intents
 
@@ -198,16 +195,11 @@ The AI will automatically learn to detect the new intent based on the name and c
 
 - [ ] Multi-language support
 - [ ] Custom intent configuration per clinic
-- [ ] Audio transcript integration (speech-to-text)
 - [ ] Call recording analysis
 - [ ] Historical data analytics
 - [ ] Integration with clinic management systems
 - [ ] Real-time call monitoring
 - [ ] Batch processing for multiple transcripts
 - [ ] Export to CSV/PDF reports
-- [ ] User authentication and multi-tenant support
-
-## License
-
-MIT License - feel free to use this for personal or commercial projects.
+- [ ] User authentication and Saas support
 
