@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 import json
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 # Load environment variables
 load_dotenv()
@@ -237,6 +238,9 @@ def detect_intent_and_extract_data(transcript):
     3. Finally, extract data with intent-specific fields
     """
     try:
+        # Get current date for relative date conversion
+        today = datetime.now().strftime("%Y-%m-%d")
+
         # Step 1: Detect intent first with minimal schema
         intent_detection_schema = {
             "type": "object",
@@ -288,7 +292,16 @@ def detect_intent_and_extract_data(transcript):
                     "role": "system",
                     "content": f"""You are a medical clinic phone assistant. Extract structured data from call transcripts.
 
+TODAY'S DATE: {today}
+
 Intent detected: {detected_intent}
+
+IMPORTANT DATE CONVERSION RULES:
+- "today" = {today}
+- "tomorrow" = {(datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")}
+- "next week" = approximately {(datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")}
+- "next month" = approximately {(datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")}
+- If caller says a relative date, convert it to YYYY-MM-DD format using today's date as reference
 
 Common field instructions:
 - Extract name: the caller's full name. If not mentioned, use null
