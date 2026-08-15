@@ -2,7 +2,7 @@
 
 An AI-powered web application for analyzing medical clinic phone call transcripts. Uses advanced language models to automatically detect caller intent, extract structured information, and flag urgency levels.
 
-A video demo can be found here: https://www.loom.com/share/fab8f139dd0141b88f0676627ef4e2ef
+A video demo can be found [here](https://www.loom.com/share/fab8f139dd0141b88f0676627ef4e2ef)
 
 ## Features
 
